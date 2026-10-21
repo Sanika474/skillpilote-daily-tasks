@@ -1,0 +1,34 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "SkillPilote Day 10 - Create an Amazon S3 bucket using AWS CloudFormation",
+  "Resources": {
+    "SkillPiloteS3Bucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "IgnorePublicAcls": true,
+          "BlockPublicPolicy": true,
+          "RestrictPublicBuckets": true
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "BucketName": {
+      "Description": "Name of the created S3 bucket",
+      "Value": {
+        "Ref": "SkillPiloteS3Bucket"
+      }
+    },
+    "BucketArn": {
+      "Description": "ARN of the created S3 bucket",
+      "Value": {
+        "Fn::GetAtt": [
+          "SkillPiloteS3Bucket",
+          "Arn"
+        ]
+      }
+    }
+  }
+}
