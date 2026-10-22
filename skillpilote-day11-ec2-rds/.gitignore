@@ -1,0 +1,12 @@
+# Never commit secrets or private keys
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials
+.aws/
+# Local logs / OS files
+*.log
+.DS_Store
+Thumbs.db
