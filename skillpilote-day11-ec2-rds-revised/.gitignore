@@ -1,0 +1,7 @@
+# Never commit private credentials
+*.pem
+.env
+.env.*
+credentials
+credentials.*
+.aws/

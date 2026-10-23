@@ -1,0 +1,137 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  SkillPilote Day 11 lab: private Amazon RDS for MySQL instance accessible
+  only from the specified EC2 security group. A Secrets Manager secret
+  generates and stores the master password.
+
+Parameters:
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC where the EC2 instance and RDS database will run.
+  PrivateSubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: At least two subnets in different Availability Zones for the DB subnet group.
+  Ec2SecurityGroupId:
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: Security group attached to the EC2 instance that will connect to RDS.
+  DBInstanceIdentifier:
+    Type: String
+    Default: skillpilote-day11-db
+    AllowedPattern: "[a-zA-Z][a-zA-Z0-9-]*"
+    ConstraintDescription: Must begin with a letter and contain only letters, numbers, and hyphens.
+  DBName:
+    Type: String
+    Default: skillpilote_db
+    AllowedPattern: "[a-zA-Z][a-zA-Z0-9_]*"
+  MasterUsername:
+    Type: String
+    Default: dbadmin
+    MinLength: 1
+    MaxLength: 16
+    AllowedPattern: "[a-zA-Z][a-zA-Z0-9]*"
+    NoEcho: true
+  DBInstanceClass:
+    Type: String
+    Default: db.t3.micro
+    AllowedValues:
+      - db.t3.micro
+      - db.t3.small
+      - db.t4g.micro
+      - db.t4g.small
+    Description: Confirm engine and account availability before deployment.
+  AllocatedStorage:
+    Type: Number
+    Default: 20
+    MinValue: 20
+    MaxValue: 100
+  BackupRetentionPeriod:
+    Type: Number
+    Default: 0
+    MinValue: 0
+    MaxValue: 7
+
+Resources:
+  RDSMasterSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub "${DBInstanceIdentifier}-master-credentials"
+      Description: !Sub "Generated master credentials for ${DBInstanceIdentifier}"
+      GenerateSecretString:
+        SecretStringTemplate: !Sub '{"username":"${MasterUsername}"}'
+        GenerateStringKey: password
+        PasswordLength: 24
+        ExcludePunctuation: true
+
+  RDSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow MySQL only from the configured EC2 security group
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          SourceSecurityGroupId: !Ref Ec2SecurityGroupId
+      Tags:
+        - Key: Name
+          Value: !Sub "${DBInstanceIdentifier}-sg"
+        - Key: Project
+          Value: SkillPilote
+
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Private subnet group for SkillPilote RDS lab
+      SubnetIds: !Ref PrivateSubnetIds
+      Tags:
+        - Key: Name
+          Value: !Sub "${DBInstanceIdentifier}-subnets"
+
+  MySQLDatabase:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      DBInstanceIdentifier: !Ref DBInstanceIdentifier
+      Engine: mysql
+      EngineVersion: "8.0"
+      DBInstanceClass: !Ref DBInstanceClass
+      AllocatedStorage: !Ref AllocatedStorage
+      StorageType: gp3
+      StorageEncrypted: true
+      DBName: !Ref DBName
+      MasterUsername: !Ref MasterUsername
+      MasterUserPassword: !Sub "{{resolve:secretsmanager:${RDSMasterSecret}:SecretString:password}}"
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      VPCSecurityGroups:
+        - !GetAtt RDSSecurityGroup.GroupId
+      PubliclyAccessible: false
+      MultiAZ: false
+      BackupRetentionPeriod: !Ref BackupRetentionPeriod
+      AutoMinorVersionUpgrade: true
+      EnableIAMDatabaseAuthentication: false
+      CopyTagsToSnapshot: true
+      DeletionProtection: false
+      Tags:
+        - Key: Name
+          Value: !Ref DBInstanceIdentifier
+        - Key: Project
+          Value: SkillPilote
+
+Outputs:
+  DBIdentifier:
+    Description: RDS DB instance identifier
+    Value: !Ref MySQLDatabase
+  DBEndpointAddress:
+    Description: Use this hostname in the mysql client
+    Value: !GetAtt MySQLDatabase.Endpoint.Address
+  DBEndpointPort:
+    Description: MySQL port
+    Value: !GetAtt MySQLDatabase.Endpoint.Port
+  DatabaseName:
+    Value: !Ref DBName
+  CredentialsSecretArn:
+    Description: ARN of Secrets Manager secret containing generated username/password
+    Value: !Ref RDSMasterSecret
+  RDSSecurityGroupId:
+    Value: !GetAtt RDSSecurityGroup.GroupId
