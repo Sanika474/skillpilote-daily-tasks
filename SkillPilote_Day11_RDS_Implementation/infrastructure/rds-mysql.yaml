@@ -1,0 +1,98 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: SkillPilote Day 11 - private MySQL RDS database reachable only from the supplied EC2 security group.
+
+Parameters:
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC ID used by the existing EC2 instance.
+  Ec2SecurityGroupId:
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: Security group attached to the EC2 instance that will connect to RDS.
+  PrivateSubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: Select at least two subnets in different Availability Zones in the selected VPC.
+  DBInstanceIdentifier:
+    Type: String
+    Default: skillpilote-day11-db
+    AllowedPattern: '^[a-z][a-z0-9-]{0,62}$'
+    Description: Lowercase RDS instance identifier.
+  DBMasterUsername:
+    Type: String
+    Default: dbadmin
+    MinLength: 1
+    MaxLength: 16
+    AllowedPattern: '^[a-zA-Z][a-zA-Z0-9_]*$'
+  DBMasterPassword:
+    Type: String
+    NoEcho: true
+    MinLength: 8
+    MaxLength: 41
+    Description: Enter a strong temporary practical password. Never commit it to source control.
+
+Resources:
+  RDSSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Private subnets for SkillPilote Day 11 MySQL RDS
+      SubnetIds: !Ref PrivateSubnetIds
+      Tags:
+        - Key: Project
+          Value: SkillPilote-Day11
+
+  RDSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Permit MySQL only from the SkillPilote EC2 security group
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          SourceSecurityGroupId: !Ref Ec2SecurityGroupId
+          Description: MySQL access from the approved EC2 security group only
+      Tags:
+        - Key: Name
+          Value: SkillPilote-Day11-RDS-SG
+
+  MySQLDatabase:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      DBInstanceIdentifier: !Ref DBInstanceIdentifier
+      Engine: mysql
+      EngineVersion: '8.4'
+      DBInstanceClass: db.t3.micro
+      AllocatedStorage: '20'
+      StorageType: gp3
+      StorageEncrypted: true
+      MasterUsername: !Ref DBMasterUsername
+      MasterUserPassword: !Ref DBMasterPassword
+      DBSubnetGroupName: !Ref RDSSubnetGroup
+      VPCSecurityGroups:
+        - !GetAtt RDSSecurityGroup.GroupId
+      PubliclyAccessible: false
+      MultiAZ: false
+      BackupRetentionPeriod: 0
+      AutoMinorVersionUpgrade: true
+      CopyTagsToSnapshot: true
+      DeletionProtection: false
+      Tags:
+        - Key: Name
+          Value: SkillPilote-Day11-MySQL
+        - Key: Project
+          Value: SkillPilote-Day11
+
+Outputs:
+  DBEndpointAddress:
+    Description: Private RDS endpoint hostname; connect from EC2 inside the same VPC.
+    Value: !GetAtt MySQLDatabase.Endpoint.Address
+  DBEndpointPort:
+    Description: MySQL endpoint port.
+    Value: !GetAtt MySQLDatabase.Endpoint.Port
+  RDSSecurityGroupId:
+    Description: RDS security group ID.
+    Value: !GetAtt RDSSecurityGroup.GroupId
+  DBInstanceIdentifier:
+    Description: RDS database instance identifier.
+    Value: !Ref MySQLDatabase
