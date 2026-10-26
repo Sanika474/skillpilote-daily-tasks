@@ -1,0 +1,125 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: SkillPilote Day 14 - Nginx on Amazon ECS Fargate with public HTTP access.
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: SkillPilote-Day14-Nginx
+    Description: Prefix used for ECS resources.
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: Existing VPC containing the selected public subnets.
+  SubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: Comma-separated subnet IDs in the selected VPC. Choose public subnets with an active 0.0.0.0/0 route to an Internet Gateway.
+  ContainerImage:
+    Type: String
+    Default: nginx:latest
+    Description: Container image for the Nginx web server.
+
+Resources:
+  TaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+
+  NginxSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow public HTTP access to the Day 14 Nginx demo.
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+          Description: HTTP for Nginx demonstration
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Project
+          Value: SkillPilote-Day14
+
+  EcsCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub '${ProjectName}-Cluster'
+      Tags:
+        - Key: Project
+          Value: SkillPilote-Day14
+
+  NginxLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/ecs/${ProjectName}'
+      RetentionInDays: 7
+
+  NginxTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub '${ProjectName}-Task'
+      Cpu: '256'
+      Memory: '512'
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      ContainerDefinitions:
+        - Name: nginx
+          Image: !Ref ContainerImage
+          Essential: true
+          PortMappings:
+            - ContainerPort: 80
+              Protocol: tcp
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref NginxLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: nginx
+
+  NginxService:
+    Type: AWS::ECS::Service
+    DependsOn:
+      - NginxSecurityGroup
+    Properties:
+      ServiceName: !Sub '${ProjectName}-Service'
+      Cluster: !Ref EcsCluster
+      LaunchType: FARGATE
+      DesiredCount: 1
+      TaskDefinition: !Ref NginxTaskDefinition
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+            - !Ref NginxSecurityGroup
+          Subnets: !Ref SubnetIds
+      Tags:
+        - Key: Project
+          Value: SkillPilote-Day14
+
+Outputs:
+  ClusterName:
+    Description: ECS cluster name.
+    Value: !Ref EcsCluster
+  ServiceName:
+    Description: ECS service name.
+    Value: !GetAtt NginxService.Name
+  SecurityGroupId:
+    Description: Security group allowing HTTP on port 80.
+    Value: !Ref NginxSecurityGroup
+  TaskDefinitionArn:
+    Description: Registered Fargate task definition.
+    Value: !Ref NginxTaskDefinition
+  LogGroupName:
+    Description: CloudWatch log group.
+    Value: !Ref NginxLogGroup
