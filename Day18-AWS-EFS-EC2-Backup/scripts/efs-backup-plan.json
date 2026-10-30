@@ -1,0 +1,15 @@
+{
+  "BackupPlanName": "SkillPilote-Day18-EFS-Plan",
+  "Rules": [
+    {
+      "RuleName": "Daily-EFS-Backup",
+      "TargetBackupVaultName": "SkillPilote-Day18-EFS-Vault",
+      "ScheduleExpression": "cron(0 18 * * ? *)",
+      "StartWindowMinutes": 60,
+      "CompletionWindowMinutes": 180,
+      "Lifecycle": {
+        "DeleteAfterDays": 7
+      }
+    }
+  ]
+}

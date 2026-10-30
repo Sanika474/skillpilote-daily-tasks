@@ -1,0 +1,7 @@
+{
+  "SelectionName": "SkillPilote-Day18-EFS-Selection",
+  "IamRoleArn": "arn:aws:iam::872376836627:role/AWSBackupDefaultServiceRole",
+  "Resources": [
+    "arn:aws:elasticfilesystem:ap-south-1:872376836627:file-system/fs-0ecb209ac72349db0"
+  ]
+}
