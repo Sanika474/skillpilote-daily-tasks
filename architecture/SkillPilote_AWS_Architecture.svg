@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1120" viewBox="0 0 1600 1120">
+<defs><style>
+.title{font: bold 38px Arial; fill:#152238}.sub{font:20px Arial;fill:#53657d}.group{font:bold 23px Arial;fill:#163b66}.node{fill:#fff;stroke:#4779ad;stroke-width:3;rx:16}.node2{fill:#f3f8ff;stroke:#4779ad;stroke-width:3;rx:16}.txt{font:bold 20px Arial;fill:#18334f}.small{font:16px Arial;fill:#40546b}.line{stroke:#4779ad;stroke-width:4;fill:none;marker-end:url(#arrow)}.dash{stroke:#8a6ac4;stroke-width:3;stroke-dasharray:9 8;fill:none;marker-end:url(#arrow2)}
+</style><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#4779ad"/></marker><marker id="arrow2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#8a6ac4"/></marker></defs>
+<rect width="1600" height="1120" fill="#f7f9fc"/><text x="800" y="62" text-anchor="middle" class="title">SkillPilote — AWS Learning Architecture</text><text x="800" y="98" text-anchor="middle" class="sub">Logical overview of services exercised across independent daily practicals (Days 1–20)</text>
+<rect x="45" y="145" width="1510" height="905" rx="28" fill="#eef4fb" stroke="#90aac7" stroke-width="3"/><text x="80" y="190" class="group">AWS Cloud • ap-south-1 (Mumbai) used for most labs</text>
+<!-- inbound -->
+<rect x="625" y="220" width="350" height="75" class="node"/><text x="800" y="266" text-anchor="middle" class="txt">Users / Browser / CLI</text>
+<path d="M800 295 V340" class="line"/>
+<!-- edge -->
+<rect x="110" y="350" width="390" height="235" rx="20" fill="#e7f1ff" stroke="#4779ad" stroke-width="2"/><text x="140" y="390" class="group">Web &amp; Network Labs</text>
+<rect x="145" y="420" width="320" height="62" class="node2"/><text x="305" y="458" text-anchor="middle" class="txt">Application Load Balancer</text>
+<path d="M305 482 V512" class="line"/><rect x="145" y="515" width="145" height="52" class="node"/><text x="217" y="548" text-anchor="middle" class="small">EC2 Web 1</text><rect x="315" y="515" width="150" height="52" class="node"/><text x="390" y="548" text-anchor="middle" class="small">EC2 Web 2</text>
+<rect x="605" y="350" width="390" height="235" rx="20" fill="#eaf7f1" stroke="#3f9471" stroke-width="2"/><text x="635" y="390" class="group">Serverless Labs</text>
+<rect x="650" y="420" width="300" height="62" class="node"/><text x="800" y="458" text-anchor="middle" class="txt">API Gateway (HTTP API)</text><path d="M800 482 V512" class="line"/><rect x="650" y="515" width="300" height="52" class="node2"/><text x="800" y="548" text-anchor="middle" class="txt">AWS Lambda</text>
+<rect x="1100" y="350" width="390" height="235" rx="20" fill="#fff4e7" stroke="#c58a36" stroke-width="2"/><text x="1130" y="390" class="group">Static Hosting &amp; Identity</text>
+<rect x="1145" y="420" width="300" height="62" class="node"/><text x="1295" y="458" text-anchor="middle" class="txt">Amazon S3 Website</text><rect x="1145" y="505" width="300" height="62" class="node"/><text x="1295" y="543" text-anchor="middle" class="txt">Amazon Cognito</text>
+<path d="M800 340 H305 V350" class="line"/><path d="M800 340 V350" class="line"/><path d="M800 340 H1295 V350" class="line"/>
+<!-- data -->
+<rect x="110" y="650" width="1380" height="190" rx="20" fill="#fff" stroke="#a2b5ca" stroke-width="2"/><text x="145" y="690" class="group">Data &amp; Shared Storage Labs</text>
+<rect x="160" y="725" width="270" height="75" class="node2"/><text x="295" y="756" text-anchor="middle" class="txt">Amazon RDS</text><text x="295" y="782" text-anchor="middle" class="small">MySQL • EC2 connectivity</text>
+<rect x="500" y="725" width="270" height="75" class="node2"/><text x="635" y="756" text-anchor="middle" class="txt">Amazon DynamoDB</text><text x="635" y="782" text-anchor="middle" class="small">Visitor records • Day 20</text>
+<rect x="840" y="725" width="270" height="75" class="node2"/><text x="975" y="756" text-anchor="middle" class="txt">Amazon EFS</text><text x="975" y="782" text-anchor="middle" class="small">NFS shared filesystem</text>
+<rect x="1180" y="725" width="270" height="75" class="node2"/><text x="1315" y="756" text-anchor="middle" class="txt">Amazon S3</text><text x="1315" y="782" text-anchor="middle" class="small">Objects / website assets</text>
+<path d="M800 567 V620 H295 V725" class="line"/><path d="M800 567 V725 H635" class="line"/><path d="M390 567 V615 H975 V725" class="line"/>
+<!-- ops -->
+<rect x="110" y="890" width="1380" height="115" rx="20" fill="#f5efff" stroke="#8a6ac4" stroke-width="2"/><text x="145" y="930" class="group">Cross-cutting Operations &amp; Governance</text>
+<rect x="180" y="950" width="260" height="42" class="node"/><text x="310" y="978" text-anchor="middle" class="small">IAM Roles &amp; Policies</text><rect x="520" y="950" width="260" height="42" class="node"/><text x="650" y="978" text-anchor="middle" class="small">CloudWatch Logs</text><rect x="860" y="950" width="260" height="42" class="node"/><text x="990" y="978" text-anchor="middle" class="small">AWS Budgets / Alerts</text><rect x="1200" y="950" width="230" height="42" class="node"/><text x="1315" y="978" text-anchor="middle" class="small">CloudFormation</text>
+<path d="M310 950 V865 H800 V567" class="dash"/><path d="M650 950 V865" class="dash"/><path d="M990 950 V865" class="dash"/><path d="M1315 950 V865" class="dash"/>
+<text x="800" y="1083" text-anchor="middle" class="sub">Portfolio-level conceptual diagram — services were demonstrated in separate practicals, not necessarily one connected production deployment.</text>
+</svg>
